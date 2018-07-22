@@ -791,7 +791,7 @@ class ProblemSession:
 
         hsin_tests_added = 0
         for test_s in get_files(["*.dummy.in.*"]):
-            test_id = int(test_s[test_s.rfind('.') + 1:])
+            test_id = int(test_s[test_s.rfind('.')+1:])
             hsin_tests_added += 1
             test_file = open(test_s, 'rb')
             options = {'checkExisting': 'true',
@@ -806,13 +806,12 @@ class ProblemSession:
                 self.send_api_request('problem.saveTest', options)
             except PolygonApiError as e:
                 print(e)
-
         hsin_tests = {}
         hsin_groups_enabled = False
         for test_s in get_files(["*.in.*"]):
             if 'dummy' in test_s:
                 continue
-            test_id = test_s[test_s.rfind('.') + 1:]
+            test_id = test_s[test_s.rfind('.')+1:]
             while test_id[-1].isalpha():
                 hsin_groups_enabled = True
                 test_id = test_id[:-1]
@@ -975,7 +974,6 @@ class ProblemSession:
             encoding = statement_guess_encoding(filepath)
             language = statement_guess_language(filepath, encoding)
             self.save_statement_from_file(filepath, encoding, language, True)
-
         for filepath in get_files(["statement/*.hsin"]):
             language = "english"
             existing_statements = self.send_api_request('problem.statements', {})
