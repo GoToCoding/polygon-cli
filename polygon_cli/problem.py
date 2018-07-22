@@ -465,11 +465,9 @@ class ProblemSession:
         :returns boolean, if updated
         """
         options = {}
-
         def add_option(name, value):
             if value is not None:
                 options[name] = value
-
         add_option('inputFile', inputfile)
         add_option('outputFile', outputfile)
         add_option('timeLimit', timelimit)
@@ -731,8 +729,8 @@ class ProblemSession:
                 try:
                     self.send_api_request('problem.saveTest', {'testset': testset_name,
                                                                'checkExisting': 'false',
-                                                               'testIndex': str(test),
-                                                               'testUseInStatements': 'true'})
+                                                               'testIndex':str(test),
+                                                               'testUseInStatements':'true'})
                 except PolygonApiError as e:
                     print(e)
             if len(groups) > 0:
