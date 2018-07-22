@@ -615,8 +615,7 @@ class ProblemSession:
                         description_content = self.send_api_request('problem.viewGeneralDescription', {})
                         if description_content == '':
                             description_content = document_file.read()
-                            self.send_api_request('problem.saveGeneralDescription',
-                                                  {'description': description_content})
+                            self.send_api_request('problem.saveGeneralDescription', {'description': description_content})
                 if os.path.basename(document_path) == 'tutorial.txt':
                     with open(document_path, 'r') as document_file:
                         tutorial_content = self.send_api_request('problem.viewGeneralTutorial', {})
