@@ -729,8 +729,8 @@ class ProblemSession:
                 try:
                     self.send_api_request('problem.saveTest', {'testset': testset_name,
                                                                'checkExisting': 'false',
-                                                               'testIndex':str(test),
-                                                               'testUseInStatements':'true'})
+                                                               'testIndex' : str(test),
+                                                               'testUseInStatements' : 'true'})
                 except PolygonApiError as e:
                     print(e)
             if len(groups) > 0:
