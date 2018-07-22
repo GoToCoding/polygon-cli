@@ -540,12 +540,12 @@ class ProblemSession:
             if match is not None:
                 tl = match.group(1)
                 print('Found TL = {} seconds'.format(tl))
-                tl = int(float(tl) * 1000)  # seconds to ms
+                tl = int(float(tl) * 1000) # seconds to ms
             match = re.search("{\s*(\d+)\s+[MmмМ][^}]*}", content)
             if match is not None:
                 ml = match.group(1)
                 print('Found ML = {} mebibytes'.format(ml))
-                ml = int(ml)  # bytes to
+                ml = int(ml) # bytes to
             self.update_info(None, None, tl, ml, None)
         content = content[content.find('\n') + 1:]
         input_format_start = content.find('\\InputFile')
@@ -599,7 +599,7 @@ class ProblemSession:
                 output_file_name = "stdout"
             any_testset = judging_node.find('testset')
             time_limit = int(any_testset.find('time-limit').text)
-            memory_limit = int(any_testset.find('memory-limit').text) // 2 ** 20
+            memory_limit = int(any_testset.find('memory-limit').text) // 2**20
             self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
         if problem_node.find('tags') is not None:  # need API function to add tags
             tags = []
@@ -632,7 +632,7 @@ class ProblemSession:
         for solution_node in assets_node.find('solutions').findall('solution'):
             xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
                                   'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
-                                  'incorrect': 'RJ', 'rejected': 'RJ', 'time-limit-exceeded-or-accepted': "TO"}
+                                  'incorrect': 'RJ', 'rejected' : 'RJ', 'time-limit-exceeded-or-accepted' : "TO"}
             upload_file_from_node(solution_node, 'solution', xml_tag_to_api_tag[solution_node.attrib['tag']])
         files_node = problem_node.find('files')
         if files_node is not None:
