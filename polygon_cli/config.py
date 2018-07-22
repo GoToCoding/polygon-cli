@@ -6,8 +6,8 @@ polygon_url = "https://polygon.codeforces.com"
 # WARNING: this will be stored in plain-text on your computer in Python scripts directory
 login = None
 password = None
-api_key = None
-api_secret = None
+api_key = '5a5efccf99b360d745ecc03b2ec488dc007aab71'
+api_secret = 'e2f6c6d944c143365e0e6c2d10fb61f4f681ecbd'
 internal_directory_path = '.polygon-cli'
 default_source_types = {
     '.cpp': 'cpp.g++17',

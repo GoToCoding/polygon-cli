@@ -465,9 +465,11 @@ class ProblemSession:
         :returns boolean, if updated
         """
         options = {}
+
         def add_option(name, value):
             if value is not None:
                 options[name] = value
+
         add_option('inputFile', inputfile)
         add_option('outputFile', outputfile)
         add_option('timeLimit', timelimit)
@@ -540,12 +542,12 @@ class ProblemSession:
             if match is not None:
                 tl = match.group(1)
                 print('Found TL = {} seconds'.format(tl))
-                tl = int(float(tl) * 1000) # seconds to ms
+                tl = int(float(tl) * 1000)  # seconds to ms
             match = re.search("{\s*(\d+)\s+[MmмМ][^}]*}", content)
             if match is not None:
                 ml = match.group(1)
                 print('Found ML = {} mebibytes'.format(ml))
-                ml = int(ml) # bytes to
+                ml = int(ml)  # bytes to
             self.update_info(None, None, tl, ml, None)
         content = content[content.find('\n') + 1:]
         input_format_start = content.find('\\InputFile')
@@ -599,7 +601,7 @@ class ProblemSession:
                 output_file_name = "stdout"
             any_testset = judging_node.find('testset')
             time_limit = int(any_testset.find('time-limit').text)
-            memory_limit = int(any_testset.find('memory-limit').text) // 2**20
+            memory_limit = int(any_testset.find('memory-limit').text) // 2 ** 20
             self.update_info(input_file_name, output_file_name, time_limit, memory_limit, None)
         if problem_node.find('tags') is not None:  # need API function to add tags
             tags = []
@@ -615,7 +617,8 @@ class ProblemSession:
                         description_content = self.send_api_request('problem.viewGeneralDescription', {})
                         if description_content == '':
                             description_content = document_file.read()
-                            self.send_api_request('problem.saveGeneralDescription', {'description': description_content})
+                            self.send_api_request('problem.saveGeneralDescription',
+                                                  {'description': description_content})
                 if os.path.basename(document_path) == 'tutorial.txt':
                     with open(document_path, 'r') as document_file:
                         tutorial_content = self.send_api_request('problem.viewGeneralTutorial', {})
@@ -631,7 +634,7 @@ class ProblemSession:
         for solution_node in assets_node.find('solutions').findall('solution'):
             xml_tag_to_api_tag = {'accepted': 'OK', 'main': 'MA', 'time-limit-exceeded': 'TL',
                                   'memory-limit-exceeded': 'ML', 'wrong-answer': 'WA',
-                                  'incorrect': 'RJ', 'rejected' : 'RJ', 'time-limit-exceeded-or-accepted' : "TO"}
+                                  'incorrect': 'RJ', 'rejected': 'RJ', 'time-limit-exceeded-or-accepted': "TO"}
             upload_file_from_node(solution_node, 'solution', xml_tag_to_api_tag[solution_node.attrib['tag']])
         files_node = problem_node.find('files')
         if files_node is not None:
@@ -728,8 +731,8 @@ class ProblemSession:
                 try:
                     self.send_api_request('problem.saveTest', {'testset': testset_name,
                                                                'checkExisting': 'false',
-                                                               'testIndex' : str(test),
-                                                               'testUseInStatements' : 'true'})
+                                                               'testIndex': str(test),
+                                                               'testUseInStatements': 'true'})
                 except PolygonApiError as e:
                     print(e)
             if len(groups) > 0:
@@ -740,6 +743,36 @@ class ProblemSession:
                 print('Setting group %s for tests %s' % (group, str(tests)))
                 self.set_test_group(tests, group)
             assert (test_id == int(testset_node.find('test-count').text))
+
+    def import_tests_by_mask(self, directory, mask):
+        """
+        :param directory: string
+        :param mask: string, not array of masks. Test will be uploaded if name is equal to the mask.
+        """
+
+        def get_files(masks):
+            files = []
+            for mask in masks:
+                files += glob.glob(os.path.join(directory, mask))
+            return sorted(files)
+
+        tests_added = 0
+        for test in get_files([mask]):
+            tests_added += 1
+            test_file = open(test, 'rb')
+            options = {'checkExisting': 'true',
+                       'testset': 'tests',
+                       'testIndex': str(tests_added),
+                       'testInput': test_file.read(),
+                       'testDescription': 'imported by polygon-cli import_tests, File %s' % os.path.basename(test),
+                       'testUseInStatements': 'false'}
+            test_file.close()
+            try:
+                print('Adding %s test #%d' % (test, tests_added))
+                self.send_api_request('problem.saveTest', options)
+            except PolygonApiError as e:
+                print(e)
+        print('Was added %d tests' % tests_added)
 
     def import_problem_from_folder(self, directory):
         def get_files(masks):
@@ -753,33 +786,33 @@ class ProblemSession:
             content = f.read()
             f.close()
             print('Adding ' + type + ': ' + path)
-            return self.upload_file(os.path.basename(path), type, content, True, tag)
+            return self.upload_file(name=os.path.basename(path), type=type,
+                                    content=content, is_new=True, source_type=tag)
 
         hsin_tests_added = 0
         for test_s in get_files(["*.dummy.in.*"]):
-            test_id = int(test_s[test_s.rfind('.')+1:])
+            test_id = int(test_s[test_s.rfind('.') + 1:])
             hsin_tests_added += 1
-            options = {}
-            options['checkExisting'] = 'true'
-            options['testset'] = 'tests'
-            options['testIndex'] = str(test_id)
             test_file = open(test_s, 'rb')
-            options['testInput'] = test_file.read()
-            options['testDescription'] = 'polygon-cli import_folder, File %s' % os.path.basename(test_s)
-            options['testUseInStatements'] = 'true'
-            options['testGroup'] = '0'
+            options = {'checkExisting': 'true',
+                       'testset': 'tests',
+                       'testIndex': str(test_id),
+                       'testInput': test_file.read(),
+                       'testDescription': 'imported by polygon-cli import_folder, File %s' % os.path.basename(test_s),
+                       'testUseInStatements': 'true', 'testGroup': '0'}
             test_file.close()
             try:
                 print('Adding %s hsin.hr sample test %d' % (test_s, test_id))
                 self.send_api_request('problem.saveTest', options)
             except PolygonApiError as e:
                 print(e)
+
         hsin_tests = {}
         hsin_groups_enabled = False
         for test_s in get_files(["*.in.*"]):
             if 'dummy' in test_s:
                 continue
-            test_id = test_s[test_s.rfind('.')+1:]
+            test_id = test_s[test_s.rfind('.') + 1:]
             while test_id[-1].isalpha():
                 hsin_groups_enabled = True
                 test_id = test_id[:-1]
@@ -942,6 +975,7 @@ class ProblemSession:
             encoding = statement_guess_encoding(filepath)
             language = statement_guess_language(filepath, encoding)
             self.save_statement_from_file(filepath, encoding, language, True)
+
         for filepath in get_files(["statement/*.hsin"]):
             language = "english"
             existing_statements = self.send_api_request('problem.statements', {})
